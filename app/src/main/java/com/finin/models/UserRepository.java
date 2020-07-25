@@ -4,6 +4,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.finin.apis.ApiService;
 import com.finin.apis.RetrofitClientInstance;
+import com.google.gson.JsonObject;
 
 import org.json.JSONObject;
 
@@ -32,13 +33,13 @@ public class UserRepository {
         Retrofit retrofit = RetrofitClientInstance.getRetrofitInstance();
         ApiService service = retrofit.create(ApiService.class);
         service.getUsers(1,3).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<JSONObject>() {
+                .subscribe(new Observer<JsonObject>() {
                     @Override
                     public void onSubscribe(Disposable d) {
                     }
 
                     @Override
-                    public void onNext(JSONObject jsonObject) {
+                    public void onNext(JsonObject jsonObject) {
                         data.setValue(jsonObject.toString());
 
                     }

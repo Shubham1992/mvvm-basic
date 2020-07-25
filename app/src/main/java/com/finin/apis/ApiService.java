@@ -1,6 +1,8 @@
 package com.finin.apis;
 
 
+import com.google.gson.JsonObject;
+
 import org.json.JSONObject;
 
 import io.reactivex.Observable;
@@ -11,7 +13,7 @@ public interface ApiService {
 
     String BASE_URL = "https://reqres.in/";
 
-    @GET("api/users?page=1")
-    Observable<JSONObject> getUsers(@Query("page") int page, @Query("delay") int delay);
+    @GET("/api/users?page=1")
+    Observable<JsonObject> getUsers(@Query("page") int page, @Query("delay") int delay);
 
 }
