@@ -1,9 +1,25 @@
-package com.finin.models;
+package com.finin.models.user;
 
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
+@Entity
 public class User {
+    @PrimaryKey
+    @ColumnInfo(name = "id")
+    private int id;
+
+    @ColumnInfo(name = "email")
     private String email;
+
+    @ColumnInfo(name = "first_name")
     private String first_name;
+
+    @ColumnInfo(name = "last_name")
     private String last_name;
+
+    @ColumnInfo(name = "avatar")
     private String avatar;
 
     public String getEmail() {
@@ -36,5 +52,13 @@ public class User {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }

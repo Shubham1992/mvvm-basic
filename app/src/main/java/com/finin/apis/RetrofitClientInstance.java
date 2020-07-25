@@ -14,15 +14,17 @@ public class RetrofitClientInstance {
 
     public static Retrofit getRetrofitInstance() {
 
-        if(Constants.is_dev) {
-           setLogging();
+        if (Constants.is_dev) {
+            setLogging();
         }
         if (retrofit == null) {
-            retrofit = new Retrofit.Builder()
-                    .baseUrl(ApiService.BASE_URL)
-                    .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                    .addConverterFactory(GsonConverterFactory.create())
-                    .build();
+            synchronized (RetrofitClientInstance.class) {
+                retrofit = new Retrofit.Builder()
+                        .baseUrl(ApiService.BASE_URL)
+                        .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+            }
         }
         return retrofit;
     }
