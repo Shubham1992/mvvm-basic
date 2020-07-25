@@ -11,6 +11,7 @@ import android.os.Bundle;
 
 import com.finin.R;
 import com.finin.models.user.User;
+import com.finin.utils.AppHelper;
 import com.finin.viewmodels.UserDataViewModel;
 import com.finin.views.adapters.UserListRVAdapter;
 
@@ -28,6 +29,7 @@ public class UserListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user_list);
+        AppHelper.setStatusBarColor(UserListActivity.this);
         rvUserList = findViewById(R.id.rvUserList);
         userListRVAdapter = new UserListRVAdapter(UserListActivity.this, userList);
         rvUserList.setLayoutManager(new LinearLayoutManager(UserListActivity.this));

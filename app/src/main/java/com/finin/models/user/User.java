@@ -61,4 +61,13 @@ public class User {
     public void setId(int id) {
         this.id = id;
     }
+
+    public String getFullName() {
+        String name = "";
+        if (first_name != null)
+            name += first_name;
+        if (last_name != null)
+            name += " " + last_name;
+        return name;
+    }
 }

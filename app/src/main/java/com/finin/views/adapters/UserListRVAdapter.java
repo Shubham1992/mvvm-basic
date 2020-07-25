@@ -12,6 +12,7 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 
+import com.bumptech.glide.Glide;
 import com.finin.R;
 import com.finin.models.user.User;
 
@@ -36,14 +37,10 @@ public class UserListRVAdapter extends RecyclerView.Adapter<UserListRVAdapter.Cu
 
     @Override
     public void onBindViewHolder(CustomViewHolder holder, int position) {
-        final User appointmentEntity = dataList.get(position);
-        holder.tvFullName.setText(dataList.get(position).getFirst_name());
-
-    }
-
-    public void openWebURL(String inURL) {
-        Intent browse = new Intent(Intent.ACTION_VIEW, Uri.parse(inURL));
-        context.startActivity(browse);
+        final User user = dataList.get(position);
+        holder.tvFullName.setText(dataList.get(position).getFullName());
+        holder.tvEmail.setText(dataList.get(position).getEmail());
+        Glide.with(context).load(user.getAvatar()).into(holder.imgAvatar);
     }
 
     @Override
