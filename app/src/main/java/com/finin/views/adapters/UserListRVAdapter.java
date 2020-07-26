@@ -23,7 +23,7 @@ public class UserListRVAdapter extends RecyclerView.Adapter<UserListRVAdapter.Cu
     private RecyclerView rvUserList;
 
     private int visibleThreshold = 2;
-    private int lastVisibleItem, totalItemCount;
+    private int lastVisibleItem = 0, totalItemCount = 0;
     private boolean loading;
     private OnLoadMoreListener onLoadMoreListener;
 
@@ -64,6 +64,13 @@ public class UserListRVAdapter extends RecyclerView.Adapter<UserListRVAdapter.Cu
 
     public void setOnLoadMoreListener(OnLoadMoreListener onLoadMoreListener) {
         this.onLoadMoreListener = onLoadMoreListener;
+    }
+
+    public void refreshRVScrollData() {
+        lastVisibleItem = 0;
+        totalItemCount = 0;
+        loading = false;
+
     }
 
     @Override

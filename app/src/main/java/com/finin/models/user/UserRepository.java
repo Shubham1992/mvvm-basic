@@ -37,9 +37,9 @@ public class UserRepository {
         return userRepository;
     }
 
-    public MutableLiveData<List<User>> getUser(final Context applicationContext) {
+    public MutableLiveData<List<User>> getUser(final Context applicationContext, boolean fetchFromDB) {
 
-        if (false && AppDatabase.getInstance(applicationContext).userDao().getAll().size() > 0) {
+        if (fetchFromDB && AppDatabase.getInstance(applicationContext).userDao().getAll().size() > 0) {
             data.setValue(AppDatabase.getInstance(applicationContext).userDao().getAll());
             return data;
         }
@@ -47,7 +47,9 @@ public class UserRepository {
         Retrofit retrofit = RetrofitClientInstance.getRetrofitInstance();
         ApiService service = retrofit.create(ApiService.class);
         int perPage = AppHelper.getDensity(applicationContext).density > 2 ? 10 : 6;
-        service.getUsers(1, Constants.DELAY, perPage).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        int page = SharedPrefsUtils.getIntegerPreference(applicationContext, Constants.PAGE, 0) + 1;
+
+        service.getUsers(page, Constants.DELAY, perPage).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<JsonObject>() {
                     @Override
                     public void onSubscribe(Disposable d) {
@@ -61,7 +63,7 @@ public class UserRepository {
                             SharedPrefsUtils.setIntegerPreference(applicationContext, Constants.TOTAL_PAGES, jsonObject.get("total_pages").getAsInt());
                             ArrayList<User> users = parseJsonResponse(jsonObject);
                             cacheData(applicationContext, users);
-                            data.setValue( AppDatabase.getInstance(applicationContext).userDao().getAll());
+                            data.setValue(AppDatabase.getInstance(applicationContext).userDao().getAll());
                         }
 
                     }
@@ -98,4 +100,10 @@ public class UserRepository {
         return users;
     }
 
+    public void refreshUserData(Context applicationContext) {
+        AppDatabase.getInstance(applicationContext).userDao().deleteAll();
+        SharedPrefsUtils.setIntegerPreference(applicationContext, Constants.PAGE, 0);
+        getUser(applicationContext, false);
+
+    }
 }

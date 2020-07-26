@@ -7,4 +7,5 @@
     <color name="black">#000000</color>
     <color name="text_light">#5C5C5C</color>
     <color name="gray_shimmer">#dadada</color>
+    <color name="red">#F44336</color>
 </resources>

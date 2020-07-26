@@ -5,7 +5,6 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
 import com.finin.models.user.User;
 import com.finin.models.user.UserRepository;
@@ -20,7 +19,15 @@ public class UserDataViewModel extends AndroidViewModel {
     }
 
     public MutableLiveData<List<User>> getObservableUser() {
-        observableUser = UserRepository.getInstance().getUser(getApplication().getApplicationContext());
+        observableUser = UserRepository.getInstance().getUser(getApplication().getApplicationContext(), true);
         return observableUser;
+    }
+
+    public void loadMore(){
+        UserRepository.getInstance().getUser(getApplication().getApplicationContext(), false);
+    }
+
+    public void refreshData() {
+        UserRepository.getInstance().refreshUserData(getApplication().getApplicationContext());
     }
 }

@@ -2,6 +2,7 @@ package com.finin.utils;
 
 import android.app.Activity;
 import android.content.Context;
+import android.net.ConnectivityManager;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.Window;
@@ -26,5 +27,10 @@ public class AppHelper {
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         return metrics;
 
+    }
+
+    public static boolean isNetworkConnected(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected();
     }
 }
