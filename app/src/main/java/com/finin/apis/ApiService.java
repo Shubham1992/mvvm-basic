@@ -13,7 +13,7 @@ public interface ApiService {
 
     String BASE_URL = "https://reqres.in/";
 
-    @GET("/api/users?page=1")
-    Observable<JsonObject> getUsers(@Query("page") int page, @Query("delay") int delay);
+    @GET("/api/users")
+    Observable<JsonObject> getUsers(@Query("page") int page, @Query("delay") int delay, @Query("per_page") int perPage);
 
 }

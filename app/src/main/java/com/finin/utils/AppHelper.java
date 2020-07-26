@@ -3,6 +3,7 @@ package com.finin.utils;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
+import android.util.DisplayMetrics;
 import android.view.Window;
 import android.view.WindowManager;
 
@@ -19,5 +20,11 @@ public class AppHelper {
             } else
                 window.setStatusBarColor(context.getResources().getColor(R.color.colorPrimaryDark));
         }
+    }
+
+    public static DisplayMetrics getDensity(Context context) {
+        DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+        return metrics;
+
     }
 }

@@ -1,16 +1,14 @@
 package com.finin.views.adapters;
 
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 
 import com.bumptech.glide.Glide;
 import com.finin.R;
@@ -22,10 +20,50 @@ public class UserListRVAdapter extends RecyclerView.Adapter<UserListRVAdapter.Cu
 
     private List<User> dataList;
     private Context context;
+    private RecyclerView rvUserList;
 
-    public UserListRVAdapter(Context context, List<User> dataList) {
+    private int visibleThreshold = 2;
+    private int lastVisibleItem, totalItemCount;
+    private boolean loading;
+    private OnLoadMoreListener onLoadMoreListener;
+
+    public UserListRVAdapter(Context context, List<User> dataList, RecyclerView rvUserList) {
         this.context = context;
         this.dataList = dataList;
+        this.rvUserList = rvUserList;
+
+        if (rvUserList.getLayoutManager() instanceof LinearLayoutManager) {
+
+            final LinearLayoutManager linearLayoutManager = (LinearLayoutManager) rvUserList
+                    .getLayoutManager();
+
+
+            rvUserList.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(RecyclerView recyclerView,
+                                       int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+
+                    totalItemCount = linearLayoutManager.getItemCount();
+                    lastVisibleItem = linearLayoutManager
+                            .findLastVisibleItemPosition();
+                    if (!loading
+                            && totalItemCount <= (lastVisibleItem + visibleThreshold)) {
+                        // End has been reached
+                        // Do something
+                        if (onLoadMoreListener != null) {
+                            onLoadMoreListener.onLoadMore();
+                        }
+                        loading = true;
+                    }
+                }
+            });
+        }
+
+    }
+
+    public void setOnLoadMoreListener(OnLoadMoreListener onLoadMoreListener) {
+        this.onLoadMoreListener = onLoadMoreListener;
     }
 
     @Override
@@ -63,6 +101,10 @@ public class UserListRVAdapter extends RecyclerView.Adapter<UserListRVAdapter.Cu
             tvEmail = itemView.findViewById(R.id.tvEmail);
             imgAvatar = itemView.findViewById(R.id.imgAvatar);
         }
+    }
+
+    public interface OnLoadMoreListener {
+        void onLoadMore();
     }
 
 }

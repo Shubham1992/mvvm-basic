@@ -2,12 +2,14 @@ package com.finin.models.user;
 
 import android.content.Context;
 
-import androidx.core.util.Predicate;
 import androidx.lifecycle.MutableLiveData;
 
 import com.finin.apis.ApiService;
 import com.finin.apis.RetrofitClientInstance;
 import com.finin.models.database.AppDatabase;
+import com.finin.utils.AppHelper;
+import com.finin.utils.Constants;
+import com.finin.utils.SharedPrefsUtils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
@@ -23,6 +25,7 @@ import retrofit2.Retrofit;
 public class UserRepository {
 
     private static UserRepository userRepository;
+    final MutableLiveData<List<User>> data = new MutableLiveData<>();
 
     private UserRepository() {
 
@@ -35,10 +38,16 @@ public class UserRepository {
     }
 
     public MutableLiveData<List<User>> getUser(final Context applicationContext) {
-        final MutableLiveData<List<User>> data = new MutableLiveData<>();
+
+        if (false && AppDatabase.getInstance(applicationContext).userDao().getAll().size() > 0) {
+            data.setValue(AppDatabase.getInstance(applicationContext).userDao().getAll());
+            return data;
+        }
+
         Retrofit retrofit = RetrofitClientInstance.getRetrofitInstance();
         ApiService service = retrofit.create(ApiService.class);
-        service.getUsers(1, 3).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        int perPage = AppHelper.getDensity(applicationContext).density > 2 ? 10 : 6;
+        service.getUsers(1, Constants.DELAY, perPage).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<JsonObject>() {
                     @Override
                     public void onSubscribe(Disposable d) {
@@ -47,9 +56,12 @@ public class UserRepository {
                     @Override
                     public void onNext(JsonObject jsonObject) {
                         if (jsonObject != null) {
+                            SharedPrefsUtils.setIntegerPreference(applicationContext, Constants.PAGE, jsonObject.get("page").getAsInt());
+                            SharedPrefsUtils.setIntegerPreference(applicationContext, Constants.TOTAL, jsonObject.get("total").getAsInt());
+                            SharedPrefsUtils.setIntegerPreference(applicationContext, Constants.TOTAL_PAGES, jsonObject.get("total_pages").getAsInt());
                             ArrayList<User> users = parseJsonResponse(jsonObject);
                             cacheData(applicationContext, users);
-                            data.setValue(users);
+                            data.setValue( AppDatabase.getInstance(applicationContext).userDao().getAll());
                         }
 
                     }
