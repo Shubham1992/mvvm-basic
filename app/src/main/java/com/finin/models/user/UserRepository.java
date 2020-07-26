@@ -39,15 +39,23 @@ public class UserRepository {
 
     public MutableLiveData<List<User>> getUser(final Context applicationContext, boolean fetchFromDB) {
 
+        if (isCacheInvalid(applicationContext)) {
+            AppDatabase.getInstance(applicationContext).userDao().deleteAll();
+            SharedPrefsUtils.setIntegerPreference(applicationContext, Constants.PAGE, 0);
+        }
+
         if (fetchFromDB && AppDatabase.getInstance(applicationContext).userDao().getAll().size() > 0) {
             data.setValue(AppDatabase.getInstance(applicationContext).userDao().getAll());
+
             return data;
         }
 
         Retrofit retrofit = RetrofitClientInstance.getRetrofitInstance();
         ApiService service = retrofit.create(ApiService.class);
         int perPage = AppHelper.getDensity(applicationContext).density > 2 ? 10 : 6;
-        int page = SharedPrefsUtils.getIntegerPreference(applicationContext, Constants.PAGE, 0) + 1;
+        final int page = SharedPrefsUtils.getIntegerPreference(applicationContext, Constants.PAGE, 0) + 1;
+        int totalPages = SharedPrefsUtils.getIntegerPreference(applicationContext, Constants.TOTAL_PAGES, Integer.MAX_VALUE);
+        if (page > totalPages) return data;
 
         service.getUsers(page, Constants.DELAY, perPage).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<JsonObject>() {
@@ -64,6 +72,10 @@ public class UserRepository {
                             ArrayList<User> users = parseJsonResponse(jsonObject);
                             cacheData(applicationContext, users);
                             data.setValue(AppDatabase.getInstance(applicationContext).userDao().getAll());
+
+                            if (page == 1) {
+                                SharedPrefsUtils.setLongPreference(applicationContext, Constants.LAST_CACHE_UPDATE_TIMESTAMP, System.currentTimeMillis());
+                            }
                         }
 
                     }
@@ -78,6 +90,12 @@ public class UserRepository {
                     }
                 });
         return data;
+    }
+
+    private boolean isCacheInvalid(Context context) {
+        if (System.currentTimeMillis() - SharedPrefsUtils.getLongPreference(context, Constants.LAST_CACHE_UPDATE_TIMESTAMP, 0) > Constants.CACHE_EXPIRY_IN_MILLISECONDS)
+            return true;
+        return false;
     }
 
     private void cacheData(Context applicationContext, ArrayList<User> users) {

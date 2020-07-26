@@ -31,27 +31,4 @@ public class ExampleInstrumentedTest {
 
         assertEquals("com.finin", appContext.getPackageName());
     }
-
-
-    @Test
-    public void insertAndGetUsers() {
-        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
-        // Given that we have a user in the data source
-        final User user = new User();
-        user.setId(100);
-        user.setFirst_name("Shubham");
-        AppDatabase.getInstance(appContext).userDao().insertUser(user);
-        // When subscribing to the emissions of user
-        AppDatabase.getInstance(appContext).userDao()
-                .getAll()
-                .test()
-                // assertValue asserts that there was only one emission
-                .assertValue(new Predicate<List<User>>() {
-                    @Override
-                    public boolean test(List<User> users) throws Exception {
-                        // The emitted user is the expected one
-                        return users.size() > 0;
-                    }
-                });
-    }
 }
