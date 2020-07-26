@@ -101,15 +101,14 @@ public class UserListActivity extends AppCompatActivity implements UserListRVAda
             if (connection.getIsConnected()) {
                 switch (connection.getType()) {
                     case WifiData:
-                        //Toast.makeText(UserListActivity.this, String.format("Wifi turned ON"), Toast.LENGTH_SHORT).show();
-                        break;
                     case MobileData:
-                        //Toast.makeText(UserListActivity.this, String.format("Mobile data turned ON"), Toast.LENGTH_SHORT).show();
+                        performRetry();
                         break;
+
                 }
             } else {
                 Toast.makeText(UserListActivity.this, String.format("No Internet Connection"), Toast.LENGTH_SHORT).show();
-                if(userList.size()>0){
+                if (userList.size() > 0) {
                     return;
                 }
                 container.setVisibility(View.GONE);
@@ -118,10 +117,7 @@ public class UserListActivity extends AppCompatActivity implements UserListRVAda
                     @Override
                     public void onClick(View v) {
                         if (AppHelper.isNetworkConnected(UserListActivity.this)) {
-                            noDataLayout.setVisibility(View.GONE);
-                            container.setVisibility(View.VISIBLE);
-                            container.startShimmerAnimation();
-                            model.refreshData();
+                            performRetry();
                         } else {
                             Toast.makeText(UserListActivity.this, "No Internet Connection", Toast.LENGTH_SHORT).show();
                         }
@@ -162,7 +158,15 @@ public class UserListActivity extends AppCompatActivity implements UserListRVAda
             Toast.makeText(UserListActivity.this, "No Internet Connection", Toast.LENGTH_SHORT).show();
             return;
         }
+
         userListRVAdapter.refreshRVScrollData();
+        model.refreshData();
+    }
+
+    void performRetry() {
+        noDataLayout.setVisibility(View.GONE);
+        container.setVisibility(View.VISIBLE);
+        container.startShimmerAnimation();
         model.refreshData();
     }
 
