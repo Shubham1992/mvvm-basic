@@ -1,5 +1,6 @@
 package com.finin.views.adapters;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -81,11 +82,17 @@ public class UserListRVAdapter extends RecyclerView.Adapter<UserListRVAdapter.Cu
     }
 
     @Override
-    public void onBindViewHolder(CustomViewHolder holder, int position) {
+    public void onBindViewHolder(final CustomViewHolder holder, int position) {
         final User user = dataList.get(position);
         holder.tvFullName.setText(dataList.get(position).getFullName());
         holder.tvEmail.setText(dataList.get(position).getEmail());
         Glide.with(context).load(user.getAvatar()).into(holder.imgAvatar);
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showUserDetail(context, user);
+            }
+        });
     }
 
     @Override
@@ -112,6 +119,23 @@ public class UserListRVAdapter extends RecyclerView.Adapter<UserListRVAdapter.Cu
 
     public interface OnLoadMoreListener {
         void onLoadMore();
+    }
+
+    void showUserDetail(Context context, User user) {
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
+        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View v = inflater.inflate(R.layout.user_detail_dialog, null, false);
+        ImageView imgAvatar = v.findViewById(R.id.imgAvatar);
+        TextView tvName = v.findViewById(R.id.tvFullName);
+        TextView tvEmail = v.findViewById(R.id.tvEmail);
+        tvName.setText(user.getFullName());
+        tvEmail.setText(user.getEmail());
+        Glide.with(context).load(user.getAvatar()).into(imgAvatar);
+
+        alertDialog.setView(v);
+        alertDialog.create().show();
+        alertDialog.setCancelable(true);
+
     }
 
 }

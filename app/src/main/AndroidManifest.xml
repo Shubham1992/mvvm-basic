@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -12,8 +13,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".views.activities.UserListActivity"
-            android:theme="@style/Theme.Design.NoActionBar"></activity>
+        <activity
+            android:name=".views.activities.UserListActivity"
+            android:theme="@style/Theme.Design.NoActionBar" />
         <activity
             android:name=".views.activities.SplashActivity"
             android:theme="@style/SplashScreenTheme">
