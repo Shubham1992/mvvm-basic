@@ -30,4 +30,5 @@ public class UserDataViewModel extends AndroidViewModel {
     public void refreshData() {
         UserRepository.getInstance().refreshUserData(getApplication().getApplicationContext());
     }
+
 }

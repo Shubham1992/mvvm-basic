@@ -1,6 +1,7 @@
 package com.finin.models.user;
 
 import android.content.Context;
+import android.widget.Toast;
 
 import androidx.lifecycle.MutableLiveData;
 
@@ -40,14 +41,13 @@ public class UserRepository {
     public MutableLiveData<List<User>> getUser(final Context applicationContext, boolean fetchFromDB) {
 
         if (isCacheInvalid(applicationContext)) {
-            AppDatabase.getInstance(applicationContext).userDao().deleteAll();
             SharedPrefsUtils.setIntegerPreference(applicationContext, Constants.PAGE, 0);
         }
 
         if (fetchFromDB && AppDatabase.getInstance(applicationContext).userDao().getAll().size() > 0) {
             data.setValue(AppDatabase.getInstance(applicationContext).userDao().getAll());
-
-            return data;
+            if (!isCacheInvalid(applicationContext))
+                return data;
         }
 
         Retrofit retrofit = RetrofitClientInstance.getRetrofitInstance();
@@ -55,7 +55,9 @@ public class UserRepository {
         int perPage = AppHelper.getDensity(applicationContext).density > 2 ? 10 : 6;
         final int page = SharedPrefsUtils.getIntegerPreference(applicationContext, Constants.PAGE, 0) + 1;
         int totalPages = SharedPrefsUtils.getIntegerPreference(applicationContext, Constants.TOTAL_PAGES, Integer.MAX_VALUE);
-        if (page > totalPages) return data;
+        if (page > totalPages) {
+            return data;
+        }
 
         service.getUsers(page, Constants.DELAY, perPage).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<JsonObject>() {
@@ -66,22 +68,27 @@ public class UserRepository {
                     @Override
                     public void onNext(JsonObject jsonObject) {
                         if (jsonObject != null) {
+                            if (page == 1) {
+                                AppDatabase.getInstance(applicationContext).userDao().deleteAll();
+                            }
                             SharedPrefsUtils.setIntegerPreference(applicationContext, Constants.PAGE, jsonObject.get("page").getAsInt());
                             SharedPrefsUtils.setIntegerPreference(applicationContext, Constants.TOTAL, jsonObject.get("total").getAsInt());
                             SharedPrefsUtils.setIntegerPreference(applicationContext, Constants.TOTAL_PAGES, jsonObject.get("total_pages").getAsInt());
+
                             ArrayList<User> users = parseJsonResponse(jsonObject);
                             cacheData(applicationContext, users);
                             data.setValue(AppDatabase.getInstance(applicationContext).userDao().getAll());
-
                             if (page == 1) {
                                 SharedPrefsUtils.setLongPreference(applicationContext, Constants.LAST_CACHE_UPDATE_TIMESTAMP, System.currentTimeMillis());
                             }
+
                         }
 
                     }
 
                     @Override
                     public void onError(Throwable e) {
+                        Toast.makeText(applicationContext, "Something went wrong", Toast.LENGTH_SHORT).show();
                     }
 
                     @Override

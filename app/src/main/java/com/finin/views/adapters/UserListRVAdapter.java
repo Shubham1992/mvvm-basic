@@ -23,7 +23,7 @@ public class UserListRVAdapter extends RecyclerView.Adapter<UserListRVAdapter.Cu
     private Context context;
     private RecyclerView rvUserList;
 
-    private int visibleThreshold = 2;
+    private int visibleThreshold = 1;
     private int lastVisibleItem = 0, totalItemCount = 0;
     private boolean loading;
     private OnLoadMoreListener onLoadMoreListener;

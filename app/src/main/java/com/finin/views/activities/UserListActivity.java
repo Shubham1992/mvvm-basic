@@ -1,6 +1,7 @@
 package com.finin.views.activities;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -17,13 +18,20 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.facebook.shimmer.ShimmerFrameLayout;
 import com.finin.R;
+import com.finin.models.internetconnection.ConnectionLiveData;
+import com.finin.models.internetconnection.ConnectionModel;
 import com.finin.models.user.User;
 import com.finin.utils.AppHelper;
+import com.finin.utils.Constants;
+import com.finin.utils.SharedPrefsUtils;
 import com.finin.viewmodels.UserDataViewModel;
 import com.finin.views.adapters.UserListRVAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.finin.utils.Constants.MobileData;
+import static com.finin.utils.Constants.WifiData;
 
 public class UserListActivity extends AppCompatActivity implements UserListRVAdapter.OnLoadMoreListener, SwipeRefreshLayout.OnRefreshListener {
 
@@ -53,12 +61,19 @@ public class UserListActivity extends AppCompatActivity implements UserListRVAda
         noDataLayout = findViewById(R.id.noDataLayout);
         btnRetry = findViewById(R.id.btnRetry);
         progressBarLayout = findViewById(R.id.progressBarLayout);
-
-        checkInternet();
+        progressBarLayout.setVisibility(View.GONE);
 
         swipeRefreshLayout = findViewById(R.id.swipeToRefresh);
         swipeRefreshLayout.setOnRefreshListener(UserListActivity.this);
 
+        ConnectionLiveData connectionLiveData = new ConnectionLiveData(getApplicationContext());
+        connectionLiveData.observe(this, internetObserver);
+
+        setupViewModels();
+
+    }
+
+    private void setupViewModels() {
         model = new ViewModelProvider(UserListActivity.this).get(UserDataViewModel.class);
         model.getObservableUser().observe(UserListActivity.this, userDataObserver);
 
@@ -68,7 +83,6 @@ public class UserListActivity extends AppCompatActivity implements UserListRVAda
     final Observer<List<User>> userDataObserver = new Observer<List<User>>() {
         @Override
         public void onChanged(@Nullable final List<User> newData) {
-            // Update the UI, in this case, a TextView.
             userList.clear();
             userList.addAll(newData);
             container.stopShimmerAnimation();
@@ -81,11 +95,62 @@ public class UserListActivity extends AppCompatActivity implements UserListRVAda
         }
     };
 
+    final Observer<ConnectionModel> internetObserver = new Observer<ConnectionModel>() {
+        @Override
+        public void onChanged(@Nullable ConnectionModel connection) {
+            if (connection.getIsConnected()) {
+                switch (connection.getType()) {
+                    case WifiData:
+                        //Toast.makeText(UserListActivity.this, String.format("Wifi turned ON"), Toast.LENGTH_SHORT).show();
+                        break;
+                    case MobileData:
+                        //Toast.makeText(UserListActivity.this, String.format("Mobile data turned ON"), Toast.LENGTH_SHORT).show();
+                        break;
+                }
+            } else {
+                Toast.makeText(UserListActivity.this, String.format("No Internet Connection"), Toast.LENGTH_SHORT).show();
+                if(userList.size()>0){
+                    return;
+                }
+                container.setVisibility(View.GONE);
+                noDataLayout.setVisibility(View.VISIBLE);
+                btnRetry.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (AppHelper.isNetworkConnected(UserListActivity.this)) {
+                            noDataLayout.setVisibility(View.GONE);
+                            container.setVisibility(View.VISIBLE);
+                            container.startShimmerAnimation();
+                            model.refreshData();
+                        } else {
+                            Toast.makeText(UserListActivity.this, "No Internet Connection", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+            }
+        }
+    };
+
+
+    final Observer<Boolean> internetConnectionObserver = new Observer<Boolean>() {
+        @Override
+        public void onChanged(@Nullable final Boolean newData) {
+            if (false) {
+                Log.e(TAG, "no internet");
+            }
+
+        }
+    };
+
     @Override
     public void onLoadMore() {
         if (!AppHelper.isNetworkConnected(UserListActivity.this)) {
             return;
         }
+        final int page = SharedPrefsUtils.getIntegerPreference(UserListActivity.this, Constants.PAGE, 0) + 1;
+        int totalPages = SharedPrefsUtils.getIntegerPreference(UserListActivity.this, Constants.TOTAL_PAGES, Integer.MAX_VALUE);
+        if (page > totalPages) return;
+
         progressBarLayout.setVisibility(View.VISIBLE);
         model.loadMore();
     }
@@ -101,23 +166,4 @@ public class UserListActivity extends AppCompatActivity implements UserListRVAda
         model.refreshData();
     }
 
-    private void checkInternet() {
-        if (!AppHelper.isNetworkConnected(UserListActivity.this)) {
-            container.setVisibility(View.GONE);
-            noDataLayout.setVisibility(View.VISIBLE);
-            btnRetry.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (AppHelper.isNetworkConnected(UserListActivity.this)) {
-                        container.setVisibility(View.VISIBLE);
-                        container.startShimmerAnimation();
-                        model.refreshData();
-                    } else {
-                        Toast.makeText(UserListActivity.this, "No Internet Connection", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-
-        }
-    }
 }
